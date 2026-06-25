@@ -95,6 +95,15 @@ export async function handleGuildMemberAdd(member: GuildMember) {
     }
   }
 
+  // --- Auto Role ---
+  if (config?.autoRoleId) {
+    try {
+      await member.roles.add(config.autoRoleId);
+    } catch (err) {
+      logger.error({ err, guildId: member.guild.id, roleId: config.autoRoleId }, "Failed to assign auto role");
+    }
+  }
+
   // --- Log ---
   await sendLog(
     member.guild,

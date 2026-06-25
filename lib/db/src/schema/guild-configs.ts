@@ -8,6 +8,7 @@ export const guildConfigsTable = pgTable("guild_configs", {
   welcomeMessage: text("welcome_message").default("Welcome to the server, {user}!"),
   welcomeBannerUrl: text("welcome_banner_url"),
   logChannelId: text("log_channel_id"),
+  autoRoleId: text("auto_role_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
