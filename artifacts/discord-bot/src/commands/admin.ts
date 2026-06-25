@@ -56,6 +56,18 @@ export const data = new SlashCommandBuilder()
       .addStringOption((o) => o.setName("message").setDescription("Announcement text").setRequired(true))
       .addChannelOption((o) => o.setName("channel").setDescription("Channel to send to (defaults to current)"))
       .addStringOption((o) => o.setName("title").setDescription("Embed title")),
+  )
+
+  // ── dmall ─────────────────────────────────────────────────────────
+  .addSubcommand((s) =>
+    s.setName("dmall")
+      .setDescription("⚠️ Send a DM to every human member of the server")
+      .addStringOption((o) =>
+        o.setName("message").setDescription("Message to send").setRequired(true),
+      )
+      .addStringOption((o) =>
+        o.setName("title").setDescription("Embed title (optional)"),
+      ),
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -267,5 +279,67 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     } catch {
       await interaction.editReply({ content: "❌ Failed to send announcement." });
     }
+    return;
+  }
+
+  // ── dmall ─────────────────────────────────────────────────────────
+  if (sub === "dmall") {
+    const message = interaction.options.getString("message", true);
+    const title = interaction.options.getString("title") ?? `📢 Message from ${guild.name}`;
+
+    // Fetch all members first
+    const members = await guild.members.fetch();
+    const humans = members.filter((m) => !m.user.bot);
+
+    await interaction.editReply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor("#faa61a")
+          .setTitle("⏳ Sending DMs...")
+          .setDescription(`Sending to **${humans.size}** members. This may take a while.`),
+      ],
+    });
+
+    const embed = new EmbedBuilder()
+      .setColor("#7289da")
+      .setTitle(title)
+      .setDescription(message)
+      .setFooter({ text: guild.name, iconURL: guild.iconURL() ?? undefined })
+      .setTimestamp();
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const [, member] of humans) {
+      try {
+        await member.send({ embeds: [embed] });
+        sent++;
+      } catch {
+        failed++;
+      }
+      // Respect Discord rate limits — 1 DM per 100ms
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
+    await interaction.followUp({
+      ephemeral: true,
+      embeds: [
+        new EmbedBuilder()
+          .setColor("#43b581")
+          .setTitle("✅ DM Blast Complete")
+          .addFields(
+            { name: "✅ Delivered", value: String(sent), inline: true },
+            { name: "❌ Failed", value: `${failed} (DMs disabled)`, inline: true },
+            { name: "📨 Total", value: String(humans.size), inline: true },
+          ),
+      ],
+    });
+
+    await sendLog(guild, "#7289da", "📨 DM Blast Sent", [
+      { name: "By", value: `${mod.tag} (<@${mod.id}>)`, inline: true },
+      { name: "Delivered", value: String(sent), inline: true },
+      { name: "Failed", value: String(failed), inline: true },
+      { name: "Message", value: message.slice(0, 1020) },
+    ]);
   }
 }

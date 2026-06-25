@@ -86,6 +86,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const deleteDays = interaction.options.getInteger("delete_days") ?? 0;
 
     try {
+      // DM before banning — can't DM after
+      try {
+        await target.send({
+          embeds: [
+            new EmbedBuilder()
+              .setColor("#f04747")
+              .setTitle(`🔨 You have been banned from ${guild.name}`)
+              .addFields({ name: "Reason", value: reason })
+              .setTimestamp(),
+          ],
+        });
+      } catch { /* DMs disabled — continue anyway */ }
+
       await guild.members.ban(target.id, { reason, deleteMessageDays: deleteDays });
       await interaction.editReply({
         embeds: [
@@ -148,6 +161,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       return;
     }
     try {
+      // DM before kicking — can't DM after they leave
+      try {
+        await target.send({
+          embeds: [
+            new EmbedBuilder()
+              .setColor("#faa61a")
+              .setTitle(`👢 You have been kicked from ${guild.name}`)
+              .addFields({ name: "Reason", value: reason })
+              .setTimestamp(),
+          ],
+        });
+      } catch { /* DMs disabled — continue anyway */ }
+
       await member.kick(reason);
       await interaction.editReply({
         embeds: [
