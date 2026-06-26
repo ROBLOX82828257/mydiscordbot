@@ -1,5 +1,6 @@
 [phases.setup]
 nixPkgs = [
+  "nodejs_22",
   "cairo",
   "pango",
   "libpng",
@@ -11,7 +12,10 @@ nixPkgs = [
 ]
 
 [phases.install]
-cmds = ["pnpm install --frozen-lockfile"]
+cmds = [
+  "npm install -g pnpm",
+  "pnpm install --frozen-lockfile",
+]
 
 [phases.build]
 cmds = []
