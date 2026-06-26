@@ -6,6 +6,7 @@ import {
   Routes,
 } from "discord.js";
 import { logger } from "./lib/logger.js";
+import { startHealthServer } from "./lib/healthServer.js";
 import { runMigrations } from "@workspace/db";
 import { handleGuildMemberAdd } from "./events/guildMemberAdd.js";
 import { handleMessageCreate } from "./events/messageCreate.js";
@@ -36,6 +37,9 @@ if (!token) {
   logger.error("DISCORD_TOKEN environment variable is required");
   process.exit(1);
 }
+
+// ── Health check HTTP server (keeps Railway happy) ────────────────────────────
+startHealthServer();
 
 // ── Run DB migrations before starting ────────────────────────────────────────
 logger.info("Running database migrations...");
