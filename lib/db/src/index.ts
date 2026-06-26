@@ -12,7 +12,6 @@ if (!process.env.DATABASE_URL) {
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Keep connections alive and recover from drops
   keepAlive: true,
   keepAliveInitialDelayMillis: 10000,
   connectionTimeoutMillis: 10000,
@@ -27,3 +26,4 @@ pool.on("error", (err) => {
 export const db = drizzle(pool, { schema });
 
 export * from "./schema";
+export * from "./migrate.js";

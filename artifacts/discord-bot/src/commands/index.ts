@@ -4,6 +4,7 @@ import * as autorole from "./autorole.js";
 import * as moderation from "./moderation.js";
 import * as channel from "./channel.js";
 import * as admin from "./admin.js";
+import * as badwords from "./badwords.js";
 import type { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 interface Command {
@@ -18,4 +19,5 @@ export const commands: Command[] = [
   { data: moderation.data as SlashCommandBuilder, execute: moderation.execute },
   { data: channel.data as SlashCommandBuilder, execute: channel.execute },
   { data: admin.data as SlashCommandBuilder, execute: admin.execute },
+  { data: badwords.data as SlashCommandBuilder, execute: badwords.execute },
 ];

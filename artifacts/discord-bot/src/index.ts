@@ -6,7 +6,9 @@ import {
   Routes,
 } from "discord.js";
 import { logger } from "./lib/logger.js";
+import { runMigrations } from "@workspace/db";
 import { handleGuildMemberAdd } from "./events/guildMemberAdd.js";
+import { handleMessageCreate } from "./events/messageCreate.js";
 import { handleMessageDelete } from "./events/messageDelete.js";
 import { handleMessageUpdate } from "./events/messageUpdate.js";
 import { handleGuildMemberRemove } from "./events/guildMemberRemove.js";
@@ -34,6 +36,11 @@ if (!token) {
   logger.error("DISCORD_TOKEN environment variable is required");
   process.exit(1);
 }
+
+// ── Run DB migrations before starting ────────────────────────────────────────
+logger.info("Running database migrations...");
+await runMigrations();
+logger.info("Database migrations complete");
 
 const client = new Client({
   intents: [
@@ -77,6 +84,7 @@ client.on("guildMemberRemove", safe("guildMemberRemove", (m) => handleGuildMembe
 client.on("guildBanAdd",       safe("guildBanAdd",       (b) => handleGuildBanAdd(b)));
 client.on("guildBanRemove",    safe("guildBanRemove",    (b) => handleGuildBanRemove(b)));
 client.on("guildMemberUpdate", safe("guildMemberUpdate", (o, n) => handleGuildMemberUpdate(o, n)));
+client.on("messageCreate",     safe("messageCreate",     (m) => handleMessageCreate(m)));
 client.on("messageDelete",     safe("messageDelete",     (m) => handleMessageDelete(m)));
 client.on("messageUpdate",     safe("messageUpdate",     (o, n) => handleMessageUpdate(o, n)));
 client.on("voiceStateUpdate",  safe("voiceStateUpdate",  (o, n) => handleVoiceStateUpdate(o, n)));
@@ -89,7 +97,6 @@ client.on("interactionCreate", safe("interactionCreate", (i) => handleInteractio
 client.on("error", (err) => logger.error({ err }, "Discord client error"));
 client.on("warn",  (msg) => logger.warn({ msg },  "Discord client warning"));
 
-// ── Reconnect on disconnect ───────────────────────────────────────────────────
 client.on("shardDisconnect", (event, id) => {
   logger.warn({ code: event.code, id }, "Shard disconnected — discord.js will auto-reconnect");
 });
