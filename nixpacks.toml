@@ -1,0 +1,20 @@
+[phases.setup]
+nixPkgs = [
+  "cairo",
+  "pango",
+  "libpng",
+  "libjpeg",
+  "giflib",
+  "librsvg",
+  "fontconfig",
+  "pkg-config",
+]
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "pnpm --filter @workspace/discord-bot run dev"
